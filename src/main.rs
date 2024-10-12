@@ -1,6 +1,7 @@
 // @author h2cone
 
 use async_trait::async_trait;
+use clap::Parser;
 use pingora::http::RequestHeader;
 use pingora::lb::{health_check, LoadBalancer};
 use pingora::prelude::{background_service, HttpPeer, Opt, RoundRobin};
@@ -8,7 +9,6 @@ use pingora::proxy::{http_proxy_service, ProxyHttp, Session};
 use pingora::server::Server;
 use std::sync::Arc;
 use std::time::Duration;
-use structopt::StructOpt;
 
 fn main() {
     env_logger::init();
@@ -36,34 +36,34 @@ fn main() {
     server.run_forever();
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct App {
     /// Bind address
-    #[structopt(long = "ba")]
+    #[clap(long = "ba")]
     bind_addr: String,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     gateway: Gateway,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     opt: Opt,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Gateway {
-    #[structopt(skip = None)]
+    #[clap(skip = None)]
     lb: Option<Arc<LoadBalancer<RoundRobin>>>,
     /// Context path
-    #[structopt(long = "cp", default_value = "/")]
+    #[clap(long = "cp", default_value = "/")]
     ctx_path: String,
     /// Upstream address
-    #[structopt(long = "ua")]
+    #[clap(long = "ua")]
     upstreams: Vec<String>,
     /// TLS
-    #[structopt(long)]
+    #[clap(long)]
     tls: bool,
     /// SNI
-    #[structopt(long, default_value = "")]
+    #[clap(long, default_value = "")]
     sni: String,
 }
 
