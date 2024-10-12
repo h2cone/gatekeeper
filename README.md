@@ -30,7 +30,7 @@ This project requires Rust and Cargo to be installed on your machine. You can do
 You can run the server via the following command:
 
 ```bash
-RUST_LOG=INFO ./target/release/gatekeeper -c ./conf.yaml --ba 0.0.0.0:8008 --ua 127.0.0.1:3000 127.0.0.1:3001
+RUST_LOG=INFO ./target/release/gatekeeper -c ./conf.yaml --ba 0.0.0.0:8008 --ua 127.0.0.1:3000 --ua 127.0.0.1:3001
 ```
 
 ## Command Line Arguments
