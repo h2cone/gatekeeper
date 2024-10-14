@@ -2,7 +2,6 @@
 
 use async_trait::async_trait;
 use clap::Parser;
-use pingora::http::RequestHeader;
 use pingora::lb::{health_check, LoadBalancer};
 use pingora::prelude::{background_service, HttpPeer, Opt, RoundRobin};
 use pingora::proxy::{http_proxy_service, ProxyHttp, Session};
@@ -22,9 +21,9 @@ fn main() {
 
     let hc = health_check::TcpHealthCheck::new();
     lb.set_health_check(hc);
-    lb.health_check_frequency = Some(Duration::from_secs(1));
+    lb.health_check_frequency = Some(Duration::from_secs(gateway.hc_freq));
 
-    let background = background_service("health-check", lb);
+    let background = background_service("hc", lb);
     let task = background.task();
     gateway.lb = Some(task);
 
@@ -65,6 +64,9 @@ pub struct Gateway {
     /// SNI
     #[clap(long, default_value = "")]
     sni: String,
+    // Health check frequency in seconds
+    #[clap(long = "hcf", default_value = "1")]
+    hc_freq: u64,
 }
 
 pub struct Ctx();
@@ -95,16 +97,15 @@ impl ProxyHttp for Gateway {
     where
         Self::CTX: Send + Sync,
     {
-        if self.ctx_path.as_str() == "/"
-            || check_uri(&_session.req_header(), self.ctx_path.as_str())
+        if _session
+            .req_header()
+            .uri
+            .path()
+            .starts_with(self.ctx_path.as_str())
         {
             return Ok(false);
         }
         let _ = _session.respond_error(404).await;
         return Ok(true);
     }
-}
-
-fn check_uri(req_header: &RequestHeader, prefix: &str) -> bool {
-    req_header.uri.path().starts_with(prefix)
 }
