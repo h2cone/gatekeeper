@@ -19,19 +19,23 @@ fn main() {
     let mut gateway = app.gateway;
     let mut lb = LoadBalancer::<RoundRobin>::try_from_iter(&gateway.upstreams).unwrap();
 
-    let hc = health_check::TcpHealthCheck::new();
-    lb.set_health_check(hc);
-    lb.health_check_frequency = Some(Duration::from_secs(gateway.hc_freq));
+    if gateway.hc_freq > 0 {
+        let hc = health_check::TcpHealthCheck::new();
+        lb.set_health_check(hc);
+        lb.health_check_frequency = Some(Duration::from_secs(gateway.hc_freq));
 
-    let background = background_service("hc", lb);
-    let task = background.task();
-    gateway.lb = Some(task);
+        let background = background_service("hc", lb);
+        let task = background.task();
+        gateway.lb = Some(task);
 
+        server.add_service(background);
+    } else {
+        gateway.lb = Some(Arc::new(lb));
+    }
     let mut proxy = http_proxy_service(&server.configuration, gateway);
     proxy.add_tcp(app.bind_addr.as_str());
 
     server.add_service(proxy);
-    server.add_service(background);
     server.run_forever();
 }
 
@@ -65,7 +69,7 @@ pub struct Gateway {
     #[clap(long, default_value = "")]
     sni: String,
     // Health check frequency in seconds
-    #[clap(long = "hcf", default_value = "1")]
+    #[clap(long = "hcf", default_value = "0")]
     hc_freq: u64,
 }
 
