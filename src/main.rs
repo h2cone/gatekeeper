@@ -68,7 +68,7 @@ pub struct Gateway {
     /// SNI
     #[clap(long, default_value = "")]
     sni: String,
-    // Health check frequency in seconds
+    /// Health check frequency in seconds
     #[clap(long = "hcf", default_value = "0")]
     hc_freq: u64,
 }
