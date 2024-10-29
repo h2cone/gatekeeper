@@ -1,13 +1,16 @@
 // @author h2cone
 
+mod cmd;
+
 use async_trait::async_trait;
-use clap::Parser;
 use pingora::lb::{health_check, LoadBalancer};
-use pingora::prelude::{background_service, HttpPeer, Opt, RoundRobin};
+use pingora::prelude::{background_service, HttpPeer, RoundRobin};
 use pingora::proxy::{http_proxy_service, ProxyHttp, Session};
 use pingora::server::Server;
 use std::sync::Arc;
 use std::time::Duration;
+
+use cmd::parser::{App, Gateway};
 
 fn main() {
     env_logger::init();
@@ -39,40 +42,6 @@ fn main() {
     server.run_forever();
 }
 
-#[derive(Parser)]
-pub struct App {
-    /// Bind address
-    #[clap(long = "ba")]
-    bind_addr: String,
-
-    #[clap(flatten)]
-    gateway: Gateway,
-
-    #[clap(flatten)]
-    opt: Opt,
-}
-
-#[derive(Parser)]
-pub struct Gateway {
-    #[clap(skip = None)]
-    lb: Option<Arc<LoadBalancer<RoundRobin>>>,
-    /// Context path
-    #[clap(long = "cp", default_value = "/")]
-    ctx_path: String,
-    /// Upstream address
-    #[clap(long = "ua")]
-    upstreams: Vec<String>,
-    /// TLS
-    #[clap(long)]
-    tls: bool,
-    /// SNI
-    #[clap(long, default_value = "")]
-    sni: String,
-    /// Health check frequency in seconds
-    #[clap(long = "hcf", default_value = "0")]
-    hc_freq: u64,
-}
-
 pub struct Ctx();
 
 #[async_trait]
@@ -89,7 +58,8 @@ impl ProxyHttp for Gateway {
         _ctx: &mut Self::CTX,
     ) -> pingora::Result<Box<HttpPeer>> {
         let upstream = self.lb.as_ref().unwrap().select(b"", 256).unwrap();
-        let peer = HttpPeer::new(upstream, self.tls, self.sni.to_string());
+        let mut peer = HttpPeer::new(upstream, self.tls, self.sni.to_string());
+        peer.options.set_http_version(2, 1);
         return Ok(Box::new(peer));
     }
 
