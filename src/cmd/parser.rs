@@ -10,6 +10,12 @@ pub struct App {
     /// Bind address
     #[clap(long = "ba")]
     pub bind_addr: String,
+    /// Certificate file path
+    #[clap(long = "cfp", default_value = "")]
+    pub cert_path: String,
+    /// Key file path
+    #[clap(long = "kfp", default_value = "")]
+    pub key_path: String,
 
     #[clap(flatten)]
     pub gateway: Gateway,

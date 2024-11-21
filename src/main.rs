@@ -37,8 +37,14 @@ fn main() {
         gateway.lb = Some(Arc::new(lb));
     }
     let mut proxy = http_proxy_service(&server.configuration, gateway);
-    proxy.add_tcp(app.bind_addr.as_str());
 
+    if app.cert_path.is_empty() {
+        proxy.add_tcp(app.bind_addr.as_str());
+    } else {
+        let tls_settings =
+            pingora::listeners::TlsSettings::intermediate(&app.cert_path, &app.key_path).unwrap();
+        proxy.add_tls_with_settings(&app.bind_addr, None, tls_settings);
+    }
     server.add_service(proxy);
     server.run_forever();
 }
