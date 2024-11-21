@@ -1,2 +1,7 @@
 version: 1
 threads: 8
+# sudo chown user:group /run/gatekeeper
+pid_file: /run/gatekeeper/gatekeeper.pid
+upgrade_sock: /tmp/gatekeeper_upgrade.sock
+# sudo chown user:group /var/gatekeeper
+error_log: /var/gatekeeper/gatekeeper.log
