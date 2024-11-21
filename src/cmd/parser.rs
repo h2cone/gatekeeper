@@ -43,4 +43,7 @@ pub struct Gateway {
     /// Health check frequency in seconds
     #[clap(long = "hcf", default_value = "0")]
     pub hc_freq: u64,
+    /// Request host
+    #[clap(long = "rh", default_value = "")]
+    pub host: String,
 }

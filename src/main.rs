@@ -3,6 +3,7 @@
 mod cmd;
 
 use async_trait::async_trait;
+use pingora::http::RequestHeader;
 use pingora::lb::{health_check, LoadBalancer};
 use pingora::prelude::{background_service, HttpPeer, RoundRobin};
 use pingora::proxy::{http_proxy_service, ProxyHttp, Session};
@@ -81,5 +82,23 @@ impl ProxyHttp for Gateway {
         }
         let _ = _session.respond_error(404).await;
         return Ok(true);
+    }
+
+    async fn upstream_request_filter(
+        &self,
+        _session: &mut Session,
+        upstream_request: &mut RequestHeader,
+        _ctx: &mut Self::CTX,
+    ) -> pingora::Result<()>
+    where
+        Self::CTX: Send + Sync,
+    {
+        if self.host.is_empty() {
+            return Ok(());
+        }
+        upstream_request
+            .insert_header("Host", self.host.as_str())
+            .unwrap();
+        Ok(())
     }
 }
