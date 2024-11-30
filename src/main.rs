@@ -78,16 +78,7 @@ impl ProxyHttp for Gateway {
     where
         Self::CTX: Send + Sync,
     {
-        if _session
-            .req_header()
-            .uri
-            .path()
-            .starts_with(self.ctx_path.as_str())
-        {
-            return Ok(false);
-        }
-        let _ = _session.respond_error(404).await;
-        return Ok(true);
+        return Ok(false);
     }
 
     async fn upstream_request_filter(

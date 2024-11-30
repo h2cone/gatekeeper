@@ -6,6 +6,11 @@ use pingora::prelude::{Opt, RoundRobin};
 use std::sync::Arc;
 
 #[derive(Parser)]
+#[clap(
+    author = "@author h2cone",
+    version,
+    about = "A simple HTTP proxy server"
+)]
 pub struct App {
     /// Bind address
     #[clap(long = "ba")]
@@ -34,16 +39,14 @@ impl App {
 pub struct Gateway {
     #[clap(skip = None)]
     pub lb: Option<Arc<LoadBalancer<RoundRobin>>>,
-    /// Context path
-    #[clap(long = "cp", default_value = "/")]
-    pub ctx_path: String,
+
     /// Upstream address
     #[clap(long = "ua")]
     pub upstreams: Vec<String>,
-    /// TLS
+    /// TLS for upstream
     #[clap(long)]
     pub tls: bool,
-    /// SNI
+    /// SNI for upstream
     #[clap(long, default_value = "")]
     pub sni: String,
     /// Health check frequency in seconds
