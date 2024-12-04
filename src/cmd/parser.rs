@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 #[derive(Parser)]
 #[clap(
-    author = "@author h2cone",
+    author = "h2cone, tw8ape@gmail.com",
     version,
     about = "A simple HTTP proxy server"
 )]
