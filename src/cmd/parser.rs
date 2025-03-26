@@ -1,5 +1,3 @@
-// @author h2cone
-
 use clap::Parser;
 use pingora::lb::LoadBalancer;
 use pingora::prelude::{Opt, RoundRobin};
@@ -7,19 +5,19 @@ use std::sync::Arc;
 
 #[derive(Parser)]
 #[clap(
-    author = "h2cone, tw8ape@gmail.com",
+    author = "tw8ape@gmail.com",
     version,
     about = "A simple HTTP proxy server"
 )]
 pub struct App {
     /// Bind address
-    #[clap(long = "ba")]
+    #[clap(long = "--bind")]
     pub bind_addr: String,
     /// Certificate file path
-    #[clap(long = "cfp", default_value = "")]
+    #[clap(long = "--cert", default_value = "")]
     pub cert_path: String,
     /// Key file path
-    #[clap(long = "kfp", default_value = "")]
+    #[clap(long = "--key", default_value = "")]
     pub key_path: String,
 
     #[clap(flatten)]
@@ -41,7 +39,7 @@ pub struct Gateway {
     pub lb: Option<Arc<LoadBalancer<RoundRobin>>>,
 
     /// Upstream address
-    #[clap(long = "ua")]
+    #[clap(long = "--upstream", required = true)]
     pub upstreams: Vec<String>,
     /// TLS for upstream
     #[clap(long)]
@@ -50,9 +48,9 @@ pub struct Gateway {
     #[clap(long, default_value = "")]
     pub sni: String,
     /// Health check frequency in seconds
-    #[clap(long = "hcf", default_value = "0")]
+    #[clap(long = "--hc-freq", default_value = "0")]
     pub hc_freq: u64,
     /// Request host
-    #[clap(long = "rh", default_value = "")]
+    #[clap(long = "--host", default_value = "")]
     pub host: String,
 }
