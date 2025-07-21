@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use async_trait::async_trait;
 use pingora::http::RequestHeader;
 use pingora::prelude::HttpPeer;
@@ -22,7 +24,12 @@ impl ProxyHttp for Gateway {
     ) -> pingora::Result<Box<HttpPeer>> {
         let upstream = self.lb.as_ref().unwrap().select(b"", 256).unwrap();
         let mut peer = HttpPeer::new(upstream, self.tls, self.sni.to_string());
-        peer.options.set_http_version(2, 1);
+        if self.enable_h2 {
+            peer.options.set_http_version(2, 1);
+        }
+        if self.idle_timeout > 0 {
+            peer.options.idle_timeout = Some(Duration::from_secs(self.idle_timeout));
+        }
         return Ok(Box::new(peer));
     }
 

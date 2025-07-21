@@ -53,4 +53,10 @@ pub struct Gateway {
     /// Request host
     #[clap(long = "--host", default_value = "")]
     pub host: String,
+    /// Upstream idle timeout in seconds
+    #[clap(long = "--idle-timeout", default_value = "0")]
+    pub idle_timeout: u64,
+    /// Enable HTTP/2 for upstream connections
+    #[clap(long = "--enable-h2")]
+    pub enable_h2: bool,
 }

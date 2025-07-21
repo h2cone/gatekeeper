@@ -1,15 +1,15 @@
 [package]
 name = "gatekeeper"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 [dependencies]
 async-trait = "0.1"
 clap = { version = "3.2.25", features = ["derive"] }
-env_logger = "0.11.7"
-openssl = { version = "0.10.71", features = ["vendored"] }
+env_logger = "0.11.8"
+openssl = { version = "0.10.73", features = ["vendored"] }
 pingora = { version = "0.3.0", features = ["lb"] }
 
 [dev-dependencies]
-reqwest = "0.12.15"
-tokio = { version = "1.44.1", features = ["test-util"] }
+reqwest = "0.12.22"
+tokio = { version = "1.46.1", features = ["test-util"] }
