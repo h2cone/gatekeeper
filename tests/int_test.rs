@@ -4,12 +4,28 @@ use std::process::{Child, Command};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+struct ServerGuard {
+    server: Child,
+}
+
+impl ServerGuard {
+    fn new(server: Child) -> Self {
+        Self { server }
+    }
+}
+
+impl Drop for ServerGuard {
+    fn drop(&mut self) {
+        let _ = self.server.kill();
+    }
+}
+
 const EXAMPLE_COM_IP: &str = "96.7.128.198";
 const EXAMPLE_NET_IP: &str = "23.215.0.135";
 const EXAMPLE_ORG_IP: &str = "23.215.0.132";
 const EXAMPLE_EDU_IP: &str = "96.7.129.25";
 
-fn start_server(bind_addr: &str, host: &str, upstreams: &[&str], tls: bool) -> Child {
+fn start_server(bind_addr: &str, host: &str, upstreams: &[&str], tls: bool) -> ServerGuard {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_gatekeeper"));
     cmd.arg("--bind")
         .arg(bind_addr)
@@ -26,7 +42,8 @@ fn start_server(bind_addr: &str, host: &str, upstreams: &[&str], tls: bool) -> C
         cmd.arg("--upstream").arg(upstream);
     }
 
-    cmd.spawn().expect("Failed to start server")
+    let server = cmd.spawn().expect("Failed to start server");
+    ServerGuard::new(server)
 }
 
 /// Waits for the server to start and be ready to accept connections
@@ -75,7 +92,7 @@ async fn test_proxy_example_com() {
     let port = get_available_port();
     let proxy_addr = format!("127.0.0.1:{}", port);
 
-    let mut server = start_server(
+    let _server = start_server(
         &proxy_addr,
         "example.com",
         &[&format!("{}:80", EXAMPLE_COM_IP)],
@@ -108,8 +125,7 @@ async fn test_proxy_example_com() {
     let body = resp.text().await.expect("Failed to read response body");
     assert!(body.contains("<h1>Example Domain</h1>"));
 
-    // Stop the server server
-    server.kill().expect("Failed to kill server process");
+    // Server will be automatically killed when _server goes out of scope
 }
 
 #[tokio::test]
@@ -117,7 +133,7 @@ async fn test_proxy_multiple_upstreams() {
     let port = get_available_port();
     let proxy_addr = format!("127.0.0.1:{}", port);
 
-    let mut server = start_server(
+    let _server = start_server(
         &proxy_addr,
         "example.org",
         &[
@@ -149,7 +165,7 @@ async fn test_proxy_multiple_upstreams() {
 
     assert!(resp.status().is_success());
 
-    server.kill().expect("Failed to kill server process");
+    // Server will be automatically killed when _server goes out of scope
 }
 
 #[tokio::test]
@@ -157,7 +173,7 @@ async fn test_proxy_with_tls() {
     let port = get_available_port();
     let proxy_addr = format!("127.0.0.1:{}", port);
 
-    let mut server = start_server(
+    let _server = start_server(
         &proxy_addr,
         "example.edu",
         &[&format!("{}:443", EXAMPLE_EDU_IP)],
@@ -188,7 +204,7 @@ async fn test_proxy_with_tls() {
 
     assert!(resp.status().is_success());
 
-    server.kill().expect("Failed to kill server process");
+    // Server will be automatically killed when _server goes out of scope
 }
 
 #[tokio::test]
@@ -196,7 +212,7 @@ async fn test_health_check() {
     let port = get_available_port();
     let proxy_addr = format!("127.0.0.1:{}", port);
 
-    let mut server = start_server(
+    let _server = start_server(
         &proxy_addr,
         "example.net",
         &["1.2.3.4:80", &format!("{}:80", EXAMPLE_NET_IP)],
@@ -243,5 +259,5 @@ async fn test_health_check() {
     let resp = resp.expect("All request attempts failed");
     assert!(resp.status().is_success());
 
-    server.kill().expect("Failed to kill server process");
+    // Server will be automatically killed when _server goes out of scope
 }
