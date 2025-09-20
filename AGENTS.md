@@ -1,60 +1,23 @@
-Repository Guidelines
+# Repository Guidelines
 
 ## Project Structure & Module Organization
-
-- `src/main.rs` - Entry point and CLI argument handling
-- `src/cmd/` - Command-line argument parsing and configuration
-  - `parser.rs` - CLI argument definitions
-  - `mod.rs` - Command module exports
-- `src/server/` - Core proxy server implementation
-  - `proxy.rs` - HTTP proxy logic
-  - `mod.rs` - Server module exports
-- `tests/int_test.rs` - Integration tests
-- `conf.yaml` - Default configuration file
+Source lives under `src/`. `src/main.rs` boots the CLI and wires configuration. Command parsing sits in `src/cmd/` with `parser.rs` describing flags and defaults. Core proxy behavior is in `src/server/`, where `proxy.rs` houses HTTP forwarding and middleware hooks. Integration coverage lands in `tests/int_test.rs` and shared configs default to `conf.yaml`. Add new modules beside peers and expose them through the local `mod.rs`.
 
 ## Build, Test, and Development Commands
-
-```bash
-cargo build          # Build the project
-cargo test          # Run all tests
-cargo run -- --help # Run with help flag
-cargo run -- --bind 0.0.0.0:8008 --upstream 1.1.1.1:443 # Run with custom config
-```
+- `cargo build` — compile the proxy and surface warnings.
+- `cargo run -- --help` — inspect CLI usage and available flags.
+- `cargo run -- --bind 0.0.0.0:8008 --upstream 1.1.1.1:443` — launch against a sample upstream.
+- `cargo test` — execute unit and integration suites before pushes.
+- `cargo clippy --all-targets --all-features` — lint for common mistakes.
 
 ## Coding Style & Naming Conventions
-
-- **Language**: Rust 2021 edition
-- **Formatting**: Use `cargo fmt` (standard Rust style)
-- **Linting**: Use `cargo clippy` for lint suggestions
-- **Naming**: snake_case for variables/functions, CamelCase for types
-- **Indentation**: 4 spaces (default Rust)
+Target Rust 2021 with four-space indents. Favor snake_case for functions, vars, and files; CamelCase for types and traits. Run `cargo fmt` prior to commits to ensure canonical formatting, and address clippy’s actionable warnings. Keep public API docs crisp with `///` comments where behavior is non-obvious.
 
 ## Testing Guidelines
-
-- **Framework**: Built-in Rust testing framework
-- **Location**: `tests/` directory for integration tests
-- **Naming**: Test functions prefixed with `test_`
-- **Run tests**: `cargo test` runs all unit and integration tests
-- **Test coverage**: Aim for critical path coverage in proxy functionality
+Use the built-in Rust test harness. Place integration cases under `tests/`, prefix functions with `test_`, and mimic real proxy flows (e.g., upstream failures, TLS handshakes). Aim for coverage around request routing, header rewriting, and error paths. Run `cargo test` locally and ensure new fixtures are deterministic.
 
 ## Commit & Pull Request Guidelines
-
-### Commit Messages
-- Use conventional format: `type(scope): description`
-- Examples from history:
-  - `Update env_logger and openssl dependencies`
-  - `Refactor command line arguments for clarity`
-
-### Pull Requests
-- Include clear description of changes
-- Reference any related issues
-- Ensure tests pass: `cargo test`
-- Format code: `cargo fmt`
-- Run linting: `cargo clippy`
+Commit messages follow `type(scope): description` (e.g., `feat(server): add upstream retry`). Group related changes, squash noisy fixups, and keep commits buildable. PRs should summarize intent, call out config or protocol impacts, link issues, and note any manual validation. Verify `cargo fmt`, `cargo clippy`, and `cargo test` prior to requesting review.
 
 ## Security & Configuration Tips
-
-- TLS certificates: Use `--cert` and `--key` flags for HTTPS
-- Health checks: Configure `--hc-freq` for upstream monitoring
-- Configuration: Use `conf.yaml` for persistent settings
-- Upstream security: Validate upstream certificates when using `--tls`
+Use `--cert`/`--key` when terminating TLS, and enable `--tls` to validate upstream certificates. Tune health probes with `--hc-freq` for critical services. Persist operational defaults in `conf.yaml`, committing only sanitized templates.
