@@ -4,26 +4,26 @@ use pingora::prelude::{Opt, RoundRobin};
 use std::sync::Arc;
 
 #[derive(Parser)]
-#[clap(
+#[command(
     author = "tw8ape@gmail.com",
     version,
     about = "A simple HTTP proxy server"
 )]
 pub struct App {
     /// Bind address
-    #[clap(long = "--bind")]
+    #[arg(long = "bind")]
     pub bind_addr: String,
     /// Certificate file path
-    #[clap(long = "--cert", default_value = "")]
+    #[arg(long = "cert", default_value = "")]
     pub cert_path: String,
     /// Key file path
-    #[clap(long = "--key", default_value = "")]
+    #[arg(long = "key", default_value = "")]
     pub key_path: String,
 
-    #[clap(flatten)]
+    #[command(flatten)]
     pub gateway: Gateway,
 
-    #[clap(flatten)]
+    #[command(flatten)]
     pub opt: Opt,
 }
 
@@ -35,28 +35,28 @@ impl App {
 
 #[derive(Parser)]
 pub struct Gateway {
-    #[clap(skip = None)]
+    #[arg(skip = None)]
     pub lb: Option<Arc<LoadBalancer<RoundRobin>>>,
 
     /// Upstream address
-    #[clap(long = "--upstream", required = true)]
+    #[arg(long = "upstream", required = true)]
     pub upstreams: Vec<String>,
     /// TLS for upstream
-    #[clap(long)]
+    #[arg(long = "tls")]
     pub tls: bool,
     /// SNI for upstream
-    #[clap(long, default_value = "")]
+    #[arg(long = "sni", default_value = "")]
     pub sni: String,
     /// Health check frequency in seconds
-    #[clap(long = "--hc-freq", default_value = "0")]
+    #[arg(long = "hc-freq", default_value = "0")]
     pub hc_freq: u64,
     /// Request host
-    #[clap(long = "--host", default_value = "")]
+    #[arg(long = "host", default_value = "")]
     pub host: String,
     /// Upstream idle timeout in seconds
-    #[clap(long = "--idle-timeout", default_value = "0")]
+    #[arg(long = "idle-timeout", default_value = "0")]
     pub idle_timeout: u64,
     /// Enable HTTP/2 for upstream connections
-    #[clap(long = "--enable-h2")]
+    #[arg(long = "enable-h2")]
     pub enable_h2: bool,
 }

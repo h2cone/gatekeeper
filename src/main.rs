@@ -39,7 +39,8 @@ fn main() {
         proxy.add_tcp(app.bind_addr.as_str());
     } else {
         let tls_settings =
-            pingora::listeners::TlsSettings::intermediate(&app.cert_path, &app.key_path).unwrap();
+            pingora::listeners::tls::TlsSettings::intermediate(&app.cert_path, &app.key_path)
+                .unwrap();
         proxy.add_tls_with_settings(&app.bind_addr, None, tls_settings);
     }
     server.add_service(proxy);
