@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.1.3] - 2026-03-09
+
+* Use local upstream harnesses in integration tests
+* Upgrade proxy-related dependencies
+
 ## [v0.1.2] - 2025-07-12
 
 * Add command line arguments for upstream idle timeout and HTTP/2 support
