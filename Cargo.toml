@@ -9,9 +9,9 @@ live_net = []
 
 [dependencies]
 async-trait = "0.1"
-clap = { version = "4.5.60", features = ["derive"] }
+clap = { version = "4.6.0", features = ["derive"] }
 env_logger = "0.11.9"
-openssl = { version = "0.10.75", features = ["vendored"] }
+openssl = { version = "0.10.76", features = ["vendored"] }
 pingora = { version = "0.8.0", features = ["lb", "openssl"] }
 
 [dev-dependencies]
