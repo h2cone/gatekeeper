@@ -17,25 +17,23 @@ You can run the server via the following command:
 ## Command Line Arguments
 
 ```shell
-USAGE:
-    gatekeeper [OPTIONS] --bind <BIND_ADDR> --upstream <UPSTREAMS>
+Usage: gatekeeper [OPTIONS] --bind <BIND_ADDR> --upstream <UPSTREAMS>
 
-OPTIONS:
-        --bind <BIND_ADDR>        Bind address
-    -c, --conf <CONF>             The path to the configuration file.
-        --cert <CERT_PATH>        Certificate file path [default: ]
-    -d, --daemon                  Whether this server should run in the background
-    -h, --help                    Print help information
-        --hc-freq <HC_FREQ>       Health check frequency in seconds [default: 0]
-        --host <HOST>             Request host [default: ]
-        --key <KEY_PATH>          Key file path [default: ]
-        --sni <SNI>               SNI for upstream [default: ]
-    -t, --test                    This flag is useful for upgrading service where the user wants to
-                                  make sure the new service can start before shutting down the old
-                                  server process.
-        --tls                     TLS for upstream
-    -u, --upgrade                 This is the base set of command line arguments for a pingora-based
-                                  service
-        --upstream <UPSTREAMS>    Upstream address
-    -V, --version                 Print version information
+Options:
+      --bind <BIND_ADDR>             Bind address
+      --cert <CERT_PATH>             Certificate file path [default: ""]
+      --key <KEY_PATH>               Key file path [default: ""]
+      --upstream <UPSTREAMS>         Upstream address
+      --tls                          TLS for upstream
+      --sni <SNI>                    SNI for upstream [default: ""]
+      --hc-freq <HC_FREQ>            Health check frequency in seconds [default: 0]
+      --host <HOST>                  Request host [default: ""]
+      --idle-timeout <IDLE_TIMEOUT>  Upstream idle timeout in seconds [default: 0]
+      --enable-h2                    Enable HTTP/2 for upstream connections
+  -u, --upgrade                      This is the base set of command line arguments for a pingora-based service
+  -d, --daemon                       Whether this server should run in the background
+  -t, --test                         This flag is useful for upgrading service where the user wants to make sure the new service can start before shutting down the old server process.
+  -c, --conf <CONF>                  The path to the configuration file.
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
