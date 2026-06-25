@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.1.4] - 2026-06-15
+
+* Add configurable upstream connection retries with `--tries`
+* Keep retries disabled by default
+
 ## [v0.1.3] - 2026-03-09
 
 * Use local upstream harnesses in integration tests

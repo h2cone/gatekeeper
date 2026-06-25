@@ -56,6 +56,9 @@ pub struct Gateway {
     /// Upstream idle timeout in seconds
     #[arg(long = "idle-timeout", default_value = "0")]
     pub idle_timeout: u64,
+    /// Upstream connection retry attempts
+    #[arg(long = "tries", default_value_t = 0)]
+    pub tries: usize,
     /// Enable HTTP/2 for upstream connections
     #[arg(long = "enable-h2")]
     pub enable_h2: bool,

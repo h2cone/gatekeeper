@@ -200,6 +200,24 @@ fn get_available_port() -> u16 {
     addr.port()
 }
 
+fn closed_loopback_upstream_before(upstream_addr: &str) -> String {
+    let upstream_port = upstream_addr
+        .rsplit_once(':')
+        .expect("upstream address should include a port")
+        .1
+        .parse::<u16>()
+        .expect("upstream port should be numeric");
+
+    for port in 1..upstream_port {
+        let addr = format!("127.0.0.1:{port}");
+        if TcpStream::connect(&addr).is_err() {
+            return addr;
+        }
+    }
+
+    panic!("No closed loopback port found before {upstream_addr}");
+}
+
 #[cfg_attr(not(feature = "live_net"), allow(dead_code))]
 fn wait_for_health_check(duration_secs: u64) {
     sleep(Duration::from_secs(duration_secs));
@@ -534,6 +552,71 @@ async fn test_proxy_multiple_upstreams() {
 
     assert!(saw_a, "did not receive response from upstream a");
     assert!(saw_b, "did not receive response from upstream b");
+}
+
+#[tokio::test]
+async fn test_connect_failure_retries_and_fails_over() {
+    let upstream = spawn_http_upstream("healthy");
+    let bad_upstream = closed_loopback_upstream_before(&upstream.addr());
+    let proxy_addr = format!("127.0.0.1:{}", get_available_port());
+    let _server = start_server_with_args(
+        &proxy_addr,
+        "retry.local",
+        &[bad_upstream, upstream.addr()],
+        false,
+        0,
+        None,
+        &["--tries", "1"],
+    );
+
+    assert!(
+        wait_for_server_ready(&proxy_addr, 10),
+        "The proxy failed to start in time"
+    );
+
+    let client = build_proxy_client(&proxy_addr);
+    let resp = client
+        .get("http://retry.local/")
+        .send()
+        .await
+        .expect("Failed to send request");
+
+    assert!(resp.status().is_success());
+    let body = resp.text().await.expect("Failed to read body");
+    assert!(
+        body.contains("upstream=healthy"),
+        "unexpected body: {}",
+        body
+    );
+}
+
+#[tokio::test]
+async fn test_connect_failure_does_not_retry_by_default() {
+    let upstream = spawn_http_upstream("healthy");
+    let bad_upstream = closed_loopback_upstream_before(&upstream.addr());
+    let proxy_addr = format!("127.0.0.1:{}", get_available_port());
+    let _server = start_server(
+        &proxy_addr,
+        "retry.local",
+        &[bad_upstream, upstream.addr()],
+        false,
+        0,
+        None,
+    );
+
+    assert!(
+        wait_for_server_ready(&proxy_addr, 10),
+        "The proxy failed to start in time"
+    );
+
+    let client = build_proxy_client(&proxy_addr);
+    let resp = client
+        .get("http://retry.local/")
+        .send()
+        .await
+        .expect("Failed to send request");
+
+    assert_eq!(resp.status().as_u16(), 502);
 }
 
 #[tokio::test]

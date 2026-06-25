@@ -29,6 +29,7 @@ Options:
       --hc-freq <HC_FREQ>            Health check frequency in seconds [default: 0]
       --host <HOST>                  Request host [default: ""]
       --idle-timeout <IDLE_TIMEOUT>  Upstream idle timeout in seconds [default: 0]
+      --tries <TRIES>                Upstream connection retry attempts [default: 0]
       --enable-h2                    Enable HTTP/2 for upstream connections
   -u, --upgrade                      This is the base set of command line arguments for a pingora-based service
   -d, --daemon                       Whether this server should run in the background
