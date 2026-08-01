@@ -559,6 +559,7 @@ async fn test_connect_failure_retries_and_fails_over() {
     let upstream = spawn_http_upstream("healthy");
     let bad_upstream = closed_loopback_upstream_before(&upstream.addr());
     let proxy_addr = format!("127.0.0.1:{}", get_available_port());
+    let conf = TempConfGuard::with_max_retries(1);
     let _server = start_server_with_args(
         &proxy_addr,
         "retry.local",
@@ -566,7 +567,7 @@ async fn test_connect_failure_retries_and_fails_over() {
         false,
         0,
         None,
-        &["--tries", "1"],
+        &["--tries", "1", "-c", conf.path()],
     );
 
     assert!(

@@ -15,6 +15,16 @@ fn main() {
 
     let app = App::from_args();
     let mut server = Server::new(Some(app.opt)).unwrap();
+
+    let required_attempts = app
+        .gateway
+        .tries
+        .checked_add(1)
+        .expect("--tries must be less than usize::MAX");
+    let configuration = Arc::get_mut(&mut server.configuration)
+        .expect("server configuration should not be shared before startup");
+    configuration.max_retries = configuration.max_retries.max(required_attempts);
+
     server.bootstrap();
 
     let mut gateway = app.gateway;
