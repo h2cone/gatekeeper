@@ -4,17 +4,20 @@ use async_trait::async_trait;
 use pingora::http::RequestHeader;
 use pingora::prelude::HttpPeer;
 use pingora::proxy::{ProxyHttp, Session};
+use pingora::Error;
 
 use crate::cmd::parser::Gateway;
 
-pub struct Ctx();
+pub struct Ctx {
+    retries: usize,
+}
 
 #[async_trait]
 impl ProxyHttp for Gateway {
     type CTX = Ctx;
 
     fn new_ctx(&self) -> Self::CTX {
-        Ctx()
+        Ctx { retries: 0 }
     }
 
     async fn upstream_peer(
@@ -31,6 +34,22 @@ impl ProxyHttp for Gateway {
             peer.options.idle_timeout = Some(Duration::from_secs(self.idle_timeout));
         }
         return Ok(Box::new(peer));
+    }
+
+    fn fail_to_connect(
+        &self,
+        _session: &mut Session,
+        _peer: &HttpPeer,
+        ctx: &mut Self::CTX,
+        mut e: Box<Error>,
+    ) -> Box<Error> {
+        if ctx.retries >= self.tries {
+            return e;
+        }
+
+        ctx.retries += 1;
+        e.set_retry(true);
+        e
     }
 
     async fn request_filter(
